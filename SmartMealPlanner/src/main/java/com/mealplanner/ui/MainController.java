@@ -1,3 +1,14 @@
+// MainController.java
+// Written by Hassan Ahmed.
+// This class builds the entire user interface for the Smart Meal Planner.
+// I structured it around a 3-tab layout because each tab represents
+// a distinct step in the user's workflow:
+// Tab 1: Browse and discover recipes
+// Tab 2: Build your weekly meal plan
+// Tab 3: View and copy your grocery list
+// The colour palette was chosen to feel fresh and food-related
+// using greens as the primary colour throughout.
+
 package com.mealplanner.ui;
 
 import com.mealplanner.data.RecipeDatabase;
@@ -95,7 +106,9 @@ public class MainController {
     // -----------------------------------------------------------------------
     // Header
     // -----------------------------------------------------------------------
-
+ // builds the top header bar with the app title
+ // kept it simple with just the title and a subtitle on the right.
+    
     private HBox buildHeader() {
         HBox header = new HBox();
         header.setStyle("-fx-background-color: " + COLOR_HEADER + "; -fx-padding: 14 20;");
@@ -119,7 +132,10 @@ public class MainController {
     // -----------------------------------------------------------------------
     // Sidebar — category filter
     // -----------------------------------------------------------------------
-
+ // the sidebar shows category filter buttons
+ // clicking a category filters the recipe list in Tab 1
+ // I used ToggleButtons so only one category can be selected at a time.
+    
     private VBox buildSidebar() {
         VBox sidebar = new VBox(6);
         sidebar.setStyle("-fx-background-color: " + COLOR_SIDEBAR + "; -fx-padding: 16 10;");
@@ -166,7 +182,9 @@ public class MainController {
     // -----------------------------------------------------------------------
     // Tab 1: Browse Recipes (REQ1)
     // -----------------------------------------------------------------------
-
+ // split into two panels - recipe list on the left, details on the right
+ // the assign section at the bottom right lets users add recipes to their plan.
+    
     private SplitPane buildBrowseTab() {
         // Left: recipe list
         recipeListView = new ListView<>();
@@ -292,7 +310,10 @@ public class MainController {
         scroll.setStyle("-fx-background-color: " + COLOR_BG + ";");
         return scroll;
     }
-
+ // builds a single day card for the weekly plan view
+ // the remove button is hidden by default and only appears
+ // when a recipe has been assigned to that day. 
+    
     private VBox buildDayCard(MealPlan.Day day) {
         VBox card = new VBox(6);
         card.setPadding(new Insets(12));
@@ -347,7 +368,8 @@ public class MainController {
     // -----------------------------------------------------------------------
     // Tab 3: Grocery List (REQ3, REQ4)
     // -----------------------------------------------------------------------
-
+ // starts empty and gets populated when the user clicks
+ // Generate Grocery List from the Weekly Plan tab.
     private ScrollPane buildGroceryTab() {
         groceryListContainer = new VBox(14);
         groceryListContainer.setPadding(new Insets(16));
@@ -362,7 +384,9 @@ public class MainController {
         scroll.setStyle("-fx-background-color: " + COLOR_BG + ";");
         return scroll;
     }
-
+ // generates and displays the grocery list grouped by category
+ // each category gets its own card with a color coded header
+ // items can be checked off as the user shops.
     private void refreshGroceryList() {
         groceryListContainer.getChildren().clear();
 
@@ -420,7 +444,8 @@ public class MainController {
         exportBtn.setOnAction(e -> copyGroceryToClipboard(grouped));
         groceryListContainer.getChildren().add(exportBtn);
     }
-
+ // formats the grocery list as plain text and copies it to clipboard
+ // useful if the user wants to paste it into their notes or messages app.
     private void copyGroceryToClipboard(Map<String, List<GroceryItem>> grouped) {
         StringBuilder sb = new StringBuilder("=== GROCERY LIST ===\n\n");
         for (Map.Entry<String, List<GroceryItem>> entry : grouped.entrySet()) {
