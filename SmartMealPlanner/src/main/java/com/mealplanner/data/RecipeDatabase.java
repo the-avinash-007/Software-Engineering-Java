@@ -1,5 +1,12 @@
 package com.mealplanner.data;
 
+//RecipeDatabase.java
+//Written by Avinash Shandilya.
+//This class is responsible for two things:
+//1. Loading all recipes from the CSV file when the app starts
+//2. Saving and loading the weekly meal plan using a local SQLite database
+//I chose SQLite because it's lightweight and works offline which fits perfectly with our desktop application design.
+
 import com.mealplanner.model.Ingredient;
 import com.mealplanner.model.Recipe;
 import org.apache.commons.csv.CSVFormat;
@@ -33,6 +40,8 @@ public class RecipeDatabase {
     // Database Initialization
     // -----------------------------------------------------------------------
 
+ // sets up the SQLite database connection and creates the meal_plan table
+ // if it doesn't exist yet - this runs every time the app starts.
     private void initDatabase() {
         try {
             connection = DriverManager.getConnection("jdbc:sqlite:" + DB_PATH);
@@ -59,7 +68,11 @@ public class RecipeDatabase {
     // -----------------------------------------------------------------------
     // CSV Loading
     // -----------------------------------------------------------------------
-
+    
+ // reads all recipes from the bundled CSV file in resources
+ // if the file is missing for some reason, we fall back to
+ // the hardcoded default recipes so the app never starts empty
+    
     private void loadRecipesFromCSV() {
         InputStream is = getClass().getResourceAsStream(CSV_RESOURCE);
         if (is == null) {
@@ -97,6 +110,11 @@ public class RecipeDatabase {
     /**
      * Parses ingredient string format: "name:qty:unit:category|name:qty:unit:category|..."
      */
+    
+ // each ingredient in the CSV is stored as a pipe-separated string
+ // format is: name:quantity:unit:category|name:quantity:unit:category
+ // for example: Garlic:2:cloves:Vegetables|Olive Oil:2:tbsp:Other
+    
     private List<Ingredient> parseIngredients(String raw) {
         List<Ingredient> list = new ArrayList<>();
         if (raw == null || raw.isBlank()) return list;
@@ -120,6 +138,10 @@ public class RecipeDatabase {
     // Default Built-in Recipes (fallback if CSV missing)
     // -----------------------------------------------------------------------
 
+ // backup recipes in case the CSV file fails to load
+ // I added these manually so the app always has something to show
+ // even if something goes wrong with the file reading
+    
     private void loadDefaultRecipes() {
         recipeCache.addAll(Arrays.asList(
             buildRecipe(1, "Spaghetti Bolognese", "Pasta",
@@ -270,6 +292,10 @@ public class RecipeDatabase {
     // Meal Plan Persistence (SQLite)
     // -----------------------------------------------------------------------
 
+ // saves a single day's meal assignment to the database
+ // using INSERT OR REPLACE so we automatically handle updates
+ // without needing a separate update query.
+    
     public void saveMealPlanEntry(String day, int recipeId, String recipeName) {
         String sql = "INSERT OR REPLACE INTO meal_plan(day, recipe_id, recipe_name) VALUES(?,?,?)";
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
@@ -291,7 +317,10 @@ public class RecipeDatabase {
             logger.severe("Error deleting meal plan entry: " + e.getMessage());
         }
     }
-
+    
+ // loads the previously saved meal plan from the database
+ // called on startup so the user's plan is restored automatically.
+    
     public Map<String, Integer> loadSavedMealPlan() {
         Map<String, Integer> saved = new HashMap<>();
         String sql = "SELECT day, recipe_id FROM meal_plan";
